@@ -4,9 +4,112 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NurseRoster Pro</title>
+
+    <!-- Vite build bundle -->
     <script type="module" crossorigin src="/nurseroster/assets/index-Yk6DNFZR.js"></script>
+
+    <!-- CSS chuẩn dùng trong khoa -->
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 20px;
+        background: #f9fafb;
+        color: #111;
+      }
+
+      h1, h2 {
+        margin-bottom: 10px;
+      }
+
+      input[type="date"],
+      input[type="text"],
+      select {
+        padding: 6px 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        background: white;
+        margin-top: 10px;
+      }
+
+      th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background: #f1f5f9;
+        font-weight: bold;
+      }
+
+      tr:nth-child(even) {
+        background: #f8fafc;
+      }
+
+      .legend {
+        margin-top: 12px;
+        font-size: 14px;
+      }
+
+      .legend-item {
+        display: inline-block;
+        margin-right: 15px;
+      }
+
+      .box {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
+        vertical-align: middle;
+        border: 1px solid #999;
+      }
+
+      .weekend {
+        background: #ef4444;
+      }
+
+      .holiday {
+        background: #facc15;
+      }
+
+      .night {
+        background: #a855f7;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          margin: 10px;
+          font-size: 14px;
+        }
+
+        table {
+          font-size: 13px;
+        }
+      }
+    </style>
   </head>
+
   <body>
+    <!-- React mount -->
     <div id="root"></div>
+
+    <!-- Legend (hiển thị luôn, React không cần biết) -->
+    <div class="legend">
+      <span class="legend-item">
+        <span class="box weekend"></span> Cuối tuần
+      </span>
+      <span class="legend-item">
+        <span class="box holiday"></span> Lễ
+      </span>
+      <span class="legend-item">
+        <span class="box night"></span> Trực đêm (≥2 người)
+      </span>
+    </div>
   </body>
 </html>
