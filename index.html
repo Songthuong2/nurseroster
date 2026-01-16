@@ -111,5 +111,76 @@
         <span class="box night"></span> Trực đêm (≥2 người)
       </span>
     </div>
+    <script>
+  // ====== CẤU HÌNH ======
+  const HOLIDAYS = [
+    "2026-01-01",
+    "2026-04-30",
+    "2026-05-01",
+    "2026-09-02"
+  ];
+
+  // ====== HÀM TIỆN ÍCH ======
+  function isWeekend(dateStr) {
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    return day === 0 || day === 6;
+  }
+
+  function isHoliday(dateStr) {
+    return HOLIDAYS.includes(dateStr);
+  }
+
+  // ====== TÔ MÀU SAU KHI REACT RENDER ======
+  function applyScheduleColors() {
+    const rows = document.querySelectorAll("table tbody tr");
+
+    rows.forEach(row => {
+      const dateCell = row.children[0];
+      if (!dateCell) return;
+
+      const dateText = dateCell.textContent.trim();
+      if (!dateText) return;
+
+      // Chuẩn hoá yyyy-mm-dd
+      const isoDate = dateText.includes("/")
+        ? dateText.split("/").reverse().join("-")
+        : dateText;
+
+      // Cuối tuần
+      if (isWeekend(isoDate)) {
+        row.style.backgroundColor = "#fee2e2";
+      }
+
+      // Lễ
+      if (isHoliday(isoDate)) {
+        row.style.backgroundColor = "#fef9c3";
+      }
+
+      // Trực đêm ≥2 người
+      const nurseCell = row.children[1];
+      if (nurseCell) {
+        const names = nurseCell.textContent.split(",");
+        if (names.length >= 2) {
+          nurseCell.style.backgroundColor = "#e9d5ff";
+        }
+      }
+    });
+  }
+
+  // ====== CHỜ REACT LOAD XONG ======
+  const observer = new MutationObserver(() => {
+    const table = document.querySelector("table tbody");
+    if (table && table.children.length > 0) {
+      applyScheduleColors();
+    }
+  });
+
+  observer.observe(document.getElementById("root"), {
+    childList: true,
+    subtree: true
+  });
+</script>
+
   </body>
 </html>
