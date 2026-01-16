@@ -181,6 +181,44 @@
     subtree: true
   });
 </script>
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbyUK_OzK4fAzJEgOGEKXKTr9FMWgidAfom5_rlkl742zPQnSiVH7_bQFOKjAIRJ6BLv/exec";
+
+  async function loadScheduleFromSheet() {
+    const res = await fetch(`${API_URL}?action=schedule`);
+    const data = await res.json();
+
+    const tbody = document.querySelector("table tbody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    data.forEach(item => {
+      const tr = document.createElement("tr");
+
+      const tdDate = document.createElement("td");
+      tdDate.textContent = item.date;
+
+      const tdNurse = document.createElement("td");
+      tdNurse.textContent = item.nurses;
+
+      tr.appendChild(tdDate);
+      tr.appendChild(tdNurse);
+      tbody.appendChild(tr);
+    });
+
+    // tô màu lại sau khi load
+    if (window.applyScheduleColors) {
+      applyScheduleColors();
+    }
+  }
+
+  // load khi trang sẵn sàng
+  window.addEventListener("load", () => {
+    setTimeout(loadScheduleFromSheet, 500);
+  });
+</script>
+
 
   </body>
 </html>
