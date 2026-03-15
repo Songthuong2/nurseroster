@@ -1,157 +1,296 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NurseRoster Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục Quy trình Kỹ thuật Chẩn đoán Hình ảnh</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1100px; margin: auto; background: #fff; padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        /* Header màn hình */
+        .screen-header { text-align: center; margin-bottom: 30px; }
+        .screen-header h1 { color: #0056b3; margin-bottom: 5px; font-size: 24px;}
+        .screen-header p { color: #555; margin: 0; font-size: 16px; font-weight: 500;}
 
-  <!-- Vite build bundle -->
-  <script type="module" crossorigin src="/nurseroster/assets/index-Yk6DNFZR.js"></script>
+        /* Header khi in (mặc định ẩn) */
+        .print-header { display: none; text-align: center; margin-bottom: 20px; font-family: 'Times New Roman', Times, serif; }
+        .print-header h2, .print-header h3 { margin: 5px 0; }
 
-  <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 20px;
-      background: #f9fafb;
-      color: #111;
-    }
+        /* Khu vực điều khiển: Tìm kiếm, Lọc, In */
+        .controls-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; background: #e9ecef; padding: 15px; border-radius: 6px;}
+        
+        .search-box { flex: 2; min-width: 250px; }
+        #searchInput { width: 100%; padding: 10px 15px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; outline: none; box-sizing: border-box;}
+        
+        .filter-box { flex: 1; min-width: 150px; }
+        #categorySelect { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; outline: none; cursor: pointer; }
+        
+        .btn-print { padding: 10px 20px; font-size: 15px; font-weight: bold; color: white; background-color: #fd7e14; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s; display: flex; align-items: center; gap: 5px;}
+        .btn-print:hover { background-color: #e86e04; }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      margin-top: 10px;
-    }
+        /* Bảng danh sách */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px 15px; border: 1px solid #ddd; text-align: left; font-size: 15px; }
+        th { background-color: #0056b3; color: white; font-weight: 600; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        /* Nhãn phân loại */
+        .tag { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; color: #fff; text-align: center; min-width: 80px;}
+        .tag-sieuam { background-color: #28a745; }
+        .tag-xquang { background-color: #17a2b8; }
+        .tag-ct { background-color: #dc3545; }
+        
+        .no-result { text-align: center; padding: 20px; color: #d9534f; font-weight: bold; display: none; font-size: 16px;}
 
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background: #f1f5f9;
-      font-weight: bold;
-    }
-
-    tr:nth-child(even) {
-      background: #f8fafc;
-    }
-
-    .legend {
-      margin-top: 12px;
-      font-size: 14px;
-    }
-
-    .legend-item {
-      margin-right: 15px;
-      display: inline-block;
-    }
-
-    .box {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      margin-right: 5px;
-      vertical-align: middle;
-      border: 1px solid #999;
-    }
-
-    .weekend { background: #ef4444; }
-    .holiday { background: #facc15; }
-    .night { background: #a855f7; }
-
-    @media (max-width: 600px) {
-      body { margin: 10px; font-size: 14px; }
-      table { font-size: 13px; }
-    }
-  </style>
+        /* --- ĐỊNH DẠNG KHI IN ẤN --- */
+        @media print {
+            body { background-color: white; padding: 0; color: #000; font-family: 'Times New Roman', Times, serif; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; }
+            .controls-container { display: none !important; } /* Ẩn thanh tìm kiếm và nút in */
+            .screen-header { display: none !important; } /* Ẩn header trên màn hình */
+            .print-header { display: block !important; } /* Hiện header bản in */
+            
+            table { border: 1px solid #000; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th { position: static; background-color: #f2f2f2 !important; color: #000 !important; border: 1px solid #000; -webkit-print-color-adjust: exact; }
+            td { border: 1px solid #000; font-size: 14px; padding: 8px; }
+            
+            /* Xóa màu nền của tag khi in để tiết kiệm mực và nhìn chuyên nghiệp hơn */
+            .tag { background-color: transparent !important; color: #000 !important; border: none; padding: 0; font-weight: normal; font-size: 14px; text-align: left;}
+        }
+    </style>
 </head>
-
 <body>
-  <!-- React mount -->
-  <div id="root"></div>
 
-  <!-- Legend -->
-  <div class="legend">
-    <span class="legend-item"><span class="box weekend"></span> Cuối tuần</span>
-    <span class="legend-item"><span class="box holiday"></span> Lễ</span>
-    <span class="legend-item"><span class="box night"></span> Trực ≥2 người</span>
-  </div>
+<div class="container">
+    <div class="print-header">
+        <h3>BỆNH VIỆN ĐA KHOA SÔNG THƯƠNG</h3>
+        <h2>KHOA CẬN LÂM SÀNG</h2>
+        <hr style="width: 30%; border: 0.5px solid #000;">
+        <h2>DANH MỤC QUY TRÌNH KỸ THUẬT CHẨN ĐOÁN HÌNH ẢNH</h2>
+    </div>
 
-  <!-- ====== CẤU HÌNH NGHIỆP VỤ ====== -->
-  <script>
-    const HOLIDAYS = [
-      "2026-01-01",
-      "2026-04-30",
-      "2026-05-01",
-      "2026-09-02"
-    ];
+    <div class="screen-header">
+        <h1>Danh mục Quy trình Kỹ thuật Chẩn đoán Hình ảnh</h1>
+        <p>Bệnh viện Đa khoa Sông Thương - Khoa Cận Lâm Sàng</p>
+    </div>
 
-    const API_URL =
-      "https://script.google.com/macros/s/AKfycbyUK_OzK4fAzJEgOGEKXKTr9FMWgidAfom5_rlkl742zPQnSiVH7_bQFOKjAIRJ6BLv/exec";
-  </script>
+    <div class="controls-container">
+        <div class="search-box">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 Tìm tên kỹ thuật...">
+        </div>
+        <div class="filter-box">
+            <select id="categorySelect" onchange="filterTable()">
+                <option value="all">Tất cả danh mục</option>
+                <option value="Siêu âm">🔹 Chỉ hiện Siêu âm</option>
+                <option value="X-Quang">🔹 Chỉ hiện X-Quang</option>
+                <option value="CT Scanner">🔹 Chỉ hiện Cắt lớp vi tính (CT)</option>
+            </select>
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ In danh sách</button>
+    </div>
 
-  <!-- ====== TÔ MÀU ====== -->
-  <script>
-    function isWeekend(dateStr) {
-      const d = new Date(dateStr);
-      const day = d.getDay();
-      return day === 0 || day === 6;
-    }
+    <table id="procedureTable">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center;">STT</th>
+                <th style="width: 50%;">Tên quy trình kỹ thuật</th>
+                <th style="width: 20%;">Phân loại</th>
+                <th style="width: 25%;">Thời gian (Ước tính)</th>
+            </tr>
+        </thead>
+        <tbody>
+           <tr><td>1</td><td>Siêu âm tuyến giáp</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>2</td><td>Siêu âm các tuyến nước bọt</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>3</td><td>Siêu âm cơ phần mềm vùng cổ mặt</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>4</td><td>Siêu âm hạch vùng cổ</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>5</td><td>Siêu âm đàn hồi nhu mô tuyến giáp</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>6</td><td>Siêu âm Doppler u tuyến, hạch vùng cổ</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>7</td><td>Siêu âm màng phổi</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>8</td><td>Siêu âm ổ bụng (gan, mật, tụy, lách, thận, bàng quang)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>9</td><td>Siêu âm hệ tiết niệu nam (thận, tuyến thượng thận, bàng quang, tiền liệt tuyến)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>10</td><td>Siêu âm hệ tiết niệu nữ (thận, tuyến thượng thận, bàng quang, tiền liệt tuyến)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>11</td><td>Siêu âm tiền liệt tuyến qua trực tràng</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>12</td><td>Siêu âm thai (thai, rau thai, nước ối)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>13</td><td>Siêu âm Doppler các khối u trong ổ bụng</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>14</td><td>Siêu âm Doppler gan, lách</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>15</td><td>Siêu âm Doppler mạch máu ổ bụng (động mạch chủ, mạc treo tràng trên, thân tạng…)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>16</td><td>Siêu âm Doppler động mạch thận</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>17</td><td>Siêu âm Doppler tĩnh mạch chậu, chủ dưới</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>18</td><td>Siêu âm tử cung buồng trứng qua đường bụng</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>19</td><td>Siêu âm tử cung, buồng trứng qua đường âm đạo</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>20</td><td>Siêu âm Doppler thai nhi 3 tháng đầu</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>21</td><td>Siêu âm Doppler thai nhi 3 tháng giữa</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>22</td><td>Siêu âm Doppler thai nhi 3 tháng cuối</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>23</td><td>Siêu âm khớp (gối, háng, khuỷu, cổ tay….)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>24</td><td>Siêu âm phần mềm (da, tổ chức dưới da, cơ….)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>25</td><td>Siêu âm Doppler động mạch chi dưới</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>26</td><td>Siêu âm Doppler tĩnh mạch chi dưới</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>27</td><td>Siêu âm tim, màng tim qua thành ngực</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>28</td><td>Siêu âm Doppler tim, van tim</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>29</td><td>Siêu âm tuyến vú hai bên</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>30</td><td>Siêu âm đàn hồi mô vú</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>31</td><td>Siêu âm tinh hoàn hai bên</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>32</td><td>Siêu âm Doppler tinh hoàn, mào tinh hoàn hai bên</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
+            <tr><td>33</td><td>Siêu âm dương vật</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>10 - 20 phút</td></tr>
+            <tr><td>34</td><td>Siêu âm đàn hồi mô (gan, tuyến vú…)</td><td><span class="tag tag-sieuam">Siêu âm</span></td><td>15 - 30 phút</td></tr>
 
-    function isHoliday(dateStr) {
-      return HOLIDAYS.includes(dateStr);
-    }
+            <tr><td>35</td><td>Chụp X-quang sọ thẳng/nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>36</td><td>Chụp X-quang mặt thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>37</td><td>Chụp X-quang mặt thấp</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>38</td><td>Chụp X-quang mặt cao</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>39</td><td>Chụp X-quang sọ tiếp tuyến</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>40</td><td>Chụp X-quang hốc mắt thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>41</td><td>Chụp X-quang Blondeau</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>42</td><td>Chụp X-quang Hirtz</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>43</td><td>Chụp X-quang hàm chếch một bên</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>44</td><td>Chụp X-quang xương chính mũi nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>45</td><td>Chụp X-quang xương chính mũi tiếp tuyến</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>46</td><td>Chụp X-quang hố yên nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>47</td><td>Chụp X-quang tai tư thế Chausse III</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>48</td><td>Chụp X-quang Schuller</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>49</td><td>Chụp X-quang Stenvers</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>50</td><td>Chụp X-quang khớp thái dương hàm</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>51</td><td>Chụp X-quang răng cận chóp (Periapical)</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>52</td><td>Chụp X-quang răng cánh cắn (Bite wing)</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>53</td><td>Chụp X-quang phim cắn (Occlusal)</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>54</td><td>Chụp X-quang mỏm trâm</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>55</td><td>Chụp X-quang cột sống cổ thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>56</td><td>Chụp X-quang cột sống cổ chếch hai bên</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>57</td><td>Chụp X-quang cột sống cổ động, nghiêng 3 tư thế</td><td><span class="tag tag-xquang">X-Quang</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>58</td><td>Chụp X-quang cột sống cổ C1- C2</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>59</td><td>Chụp X-quang cột sống ngực thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>60</td><td>Chụp X-quang cột sống ngực chếch hai bên</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>61</td><td>Chụp X-quang cột sống thắt lưng thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>62</td><td>Chụp X-quang cột sống thắt lưng động, 4 tư thế (thẳng, nghiêng, cúi, ưỡn)</td><td><span class="tag tag-xquang">X-Quang</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>63</td><td>Chụp X-quang cột sống thắt lưng De Sèze</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>64</td><td>Chụp X-quang cột sống cùng cụt thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>65</td><td>Chụp X-quang khớp cùng chậu thẳng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>66</td><td>Chụp X-quang khớp cùng chậu chếch hai bên</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>67</td><td>Chụp X-quang khung chậu thẳng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>68</td><td>Chụp X-quang xương đòn</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>69</td><td>Chụp X-quang khớp vai thẳng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>70</td><td>Chụp X-quang khớp vai nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>71</td><td>Chụp X-quang khớp vai chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>72</td><td>Chụp X-quang xương bả vai thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>73</td><td>Chụp X-quang xương cánh tay thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>74</td><td>Chụp X-quang khớp khuỷu thẳng, nghiêng hoặc chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>75</td><td>Chụp X-quang khớp khuỷu gập (Jones hoặc Coyle)</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>76</td><td>Chụp X-quang xương cẳng tay thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>77</td><td>Chụp X-quang xương cổ tay thẳng, nghiêng hoặc chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>78</td><td>Chụp X-quang xương bàn ngón tay thẳng, nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>79</td><td>Chụp X-quang khớp háng thẳng hai bên</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>80</td><td>Chụp X-quang khớp háng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>81</td><td>Chụp X-quang xương đùi thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>82</td><td>Chụp X-quang khớp gối thẳng, nghiêng hoặc chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>83</td><td>Chụp X-quang xương bánh chè và khớp đùi bánh chè</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>84</td><td>Chụp X-quang xương cẳng chân thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>85</td><td>Chụp X-quang xương cổ chân thẳng, nghiêng hoặc chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>86</td><td>Chụp X-quang xương bàn, ngón chân thẳng, nghiêng hoặc chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>87</td><td>Chụp X-quang xương gót thẳng nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>88</td><td>Chụp X-quang ngực thẳng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>89</td><td>Chụp X-quang ngực nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>90</td><td>Chụp X-quang ngực chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>91</td><td>Chụp X-quang xương ức thẳng, nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>92</td><td>Chụp X-quang khớp ức đòn thẳng chếch</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>93</td><td>Chụp X-quang đỉnh phổi ưỡn</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>94</td><td>Chụp X-quang thực quản cổ nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>95</td><td>Chụp X-quang bụng không chuẩn bị thẳng hoặc nghiêng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>96</td><td>Chụp X-quang tuyến vú</td><td><span class="tag tag-xquang">X-Quang</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>97</td><td>Chụp X-quang thực quản dạ dày</td><td><span class="tag tag-xquang">X-Quang</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>98</td><td>Chụp X-quang đại tràng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>99</td><td>Chụp X-quang tử cung vòi trứng</td><td><span class="tag tag-xquang">X-Quang</span></td><td>20 - 30 phút</td></tr>
 
-    function applyScheduleColors() {
-      document.querySelectorAll("table tbody tr").forEach(row => {
-        const date = row.children[0]?.textContent?.trim();
-        const nurses = row.children[1]?.textContent || "";
+            <tr><td>100</td><td>Chụp CLVT sọ não không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>101</td><td>Chụp CLVT sọ não có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>102</td><td>Chụp CLVT hệ động mạch cảnh có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>103</td><td>Chụp CLVT sọ não có dựng hình 3D</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>104</td><td>Chụp CLVT hàm - mặt không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>105</td><td>Chụp CLVT hàm - mặt có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>106</td><td>Chụp CLVT tai - xương đá không tiêm thuốc</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>107</td><td>Chụp CLVT tai - xương đá có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>108</td><td>Chụp CLVT hàm mặt có dựng hình 3D</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>109</td><td>Chụp CLVT lồng ngực không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>110</td><td>Chụp CLVT lồng ngực có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>111</td><td>Chụp CLVT phổi độ phân giải cao</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>112</td><td>Chụp CLVT phổi liều thấp tầm soát u</td><td><span class="tag tag-ct">CT Scanner</span></td><td>5 - 10 phút</td></tr>
+            <tr><td>113</td><td>Chụp CLVT nội soi ảo cây phế quản</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>114</td><td>Chụp CLVT động mạch phổi</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>115</td><td>Chụp CLVT động mạch chủ ngực</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>116</td><td>Chụp cắt lớp vi tính ổ bụng khảo sát mạch các tạng</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>117</td><td>Chụp cắt lớp vi tính ruột non (entero-scan) không dùng sonde, không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>15 - 20 phút</td></tr>
+            <tr><td>118</td><td>Chụp cắt lớp vi tính ruột non (entero-scan) không dùng sonde, có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>119</td><td>Chụp cắt lớp vi tính ruột non (entero-scan) có dùng sonde, có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>25 - 40 phút</td></tr>
+            <tr><td>120</td><td>Chụp cắt lớp vi tính ruột non (entero-scan) có dùng sonde, không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>121</td><td>Chụp cắt lớp vi tính đại tràng (colo-scan) dùng dịch hoặc hơi có nội soi ảo, không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>122</td><td>Chụp cắt lớp vi tính đại tràng (colo-scan) dùng dịch hoặc hơi có nội soi ảo, có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>25 - 40 phút</td></tr>
+            <tr><td>123</td><td>Chụp CLVT động mạch chủ - chậu</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>124</td><td>Chụp CLVT cột sống cổ không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>125</td><td>Chụp CLVT cột sống cổ có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>126</td><td>Chụp CLVT cột sống ngực không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>127</td><td>Chụp CLVT cột sống ngực có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>128</td><td>Chụp CLVT cột sống thắt lưng không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>129</td><td>Chụp CLVT cột sống thắt lưng có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>130</td><td>Chụp CLVT khớp thường quy không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>131</td><td>Chụp CLVT khớp thường quy có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>132</td><td>Chụp CLVT khớp có tiêm thuốc cản quang vào ổ khớp</td><td><span class="tag tag-ct">CT Scanner</span></td><td>25 - 40 phút</td></tr>
+            <tr><td>133</td><td>Chụp CLVT xương chi không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>134</td><td>Chụp CLVT xương chi có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>135</td><td>Chụp CLVT mạch máu chi trên</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>136</td><td>Chụp CLVT mạch máu chi dưới</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>137</td><td>Chụp cắt lớp vi tính hốc mắt không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>138</td><td>Chụp cắt lớp vi tính hốc mắt có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+            <tr><td>139</td><td>Chụp cắt lớp vi tính bụng - tiểu khung thường quy không tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>10 - 15 phút</td></tr>
+            <tr><td>140</td><td>Chụp cắt lớp vi tính bụng - tiểu khung thường quy có tiêm thuốc cản quang</td><td><span class="tag tag-ct">CT Scanner</span></td><td>20 - 30 phút</td></tr>
+        </tbody>
+    </table>
+    <div id="noResult" class="no-result">Không tìm thấy quy trình nào phù hợp!</div>
+</div>
 
-        if (!date) return;
+<script>
+    function filterTable() {
+        var searchInput = document.getElementById("searchInput").value.toLowerCase();
+        var categoryFilter = document.getElementById("categorySelect").value;
+        var table = document.getElementById("procedureTable");
+        var tr = table.getElementsByTagName("tr");
+        var noResultDiv = document.getElementById("noResult");
+        var hasVisibleRow = false;
 
-        if (isWeekend(date)) {
-          row.style.backgroundColor = "#fee2e2";
+        // Bắt đầu từ 1 để bỏ qua hàng tiêu đề (thead)
+        for (var i = 1; i < tr.length; i++) {
+            var tdName = tr[i].getElementsByTagName("td")[1]; // Cột Tên quy trình
+            var tdCategory = tr[i].getElementsByTagName("td")[2]; // Cột Phân loại
+
+            if (tdName && tdCategory) {
+                var textName = tdName.textContent || tdName.innerText;
+                var textCategory = tdCategory.textContent || tdCategory.innerText;
+
+                // Kiểm tra điều kiện tìm kiếm bằng chữ
+                var matchSearch = textName.toLowerCase().indexOf(searchInput) > -1;
+                
+                // Kiểm tra điều kiện lọc theo dropdown
+                var matchCategory = (categoryFilter === "all") || (textCategory.trim() === categoryFilter);
+
+                // Nếu thỏa mãn ĐỒNG THỜI cả 2 điều kiện thì hiển thị
+                if (matchSearch && matchCategory) {
+                    tr[i].style.display = "";
+                    hasVisibleRow = true;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
         }
 
-        if (isHoliday(date)) {
-          row.style.backgroundColor = "#fef9c3";
+        // Hiển thị thông báo nếu không có dòng nào xuất hiện
+        if (!hasVisibleRow && tr.length > 1) {
+            noResultDiv.style.display = "block";
+        } else {
+            noResultDiv.style.display = "none";
         }
-
-        if (nurses.split(",").length >= 2) {
-          row.children[1].style.backgroundColor = "#e9d5ff";
-        }
-      });
     }
-
-    window.applyScheduleColors = applyScheduleColors;
-  </script>
-
-  <!-- ====== LOAD DỮ LIỆU TỪ GOOGLE SHEET ====== -->
-  <script>
-    async function loadScheduleFromSheet() {
-      const res = await fetch(`${API_URL}?action=schedule`);
-      const data = await res.json();
-
-      const tbody = document.querySelector("table tbody");
-      if (!tbody) return;
-
-      tbody.innerHTML = "";
-
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${item.date}</td><td>${item.nurses}</td>`;
-        tbody.appendChild(tr);
-      });
-
-      applyScheduleColors();
-    }
-
-    window.addEventListener("load", () => {
-      setTimeout(loadScheduleFromSheet, 600);
-    });
-  </script>
+</script>
 
 </body>
 </html>
